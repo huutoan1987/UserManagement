@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="user"
+            type="com.example.usermanagement.data.entity.User" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.fragment.detail.DetailFrg">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/vline_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="16dp"/>
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/vline_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="16dp"/>
+
+        <ImageView
+            android:id="@+id/imv_avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:src="@drawable/avatar"
+            android:scaleType="fitXY"
+            android:visibility="@{user == null ? View.INVISIBLE : View.VISIBLE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@id/vline_left"
+            app:layout_constraintEnd_toEndOf="@id/vline_right"
+            />
+
+        <TextView
+            android:id="@+id/txt_name"
+            style="?android:attr/textAppearanceLarge"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text='@{user.name ?? ""}'
+            android:gravity="center"
+            android:maxLines="2"
+            app:layout_constraintTop_toBottomOf="@id/imv_avatar"
+            app:layout_constraintStart_toStartOf="@id/vline_left"
+            app:layout_constraintEnd_toEndOf="@id/vline_right"
+            tools:text="Name"
+            />
+        <TextView
+            android:id="@+id/txt_url"
+            style="?android:attr/textAppearanceMedium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text='@{user == null ? "" : "URL: " + (user.url ?? "")}'
+            android:maxLines="1"
+            app:layout_constraintTop_toBottomOf="@id/txt_name"
+            app:layout_constraintStart_toStartOf="@id/vline_left"
+            app:layout_constraintEnd_toEndOf="@id/vline_right"
+            tools:text="URL"
+            />
+        <TextView
+            android:id="@+id/txt_score"
+            style="?android:attr/textAppearanceMedium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text='@{user == null ? "" : "Score: " + String.valueOf(user.score) ?? ""}'
+            android:maxLines="1"
+            app:layout_constraintTop_toBottomOf="@id/txt_url"
+            app:layout_constraintStart_toStartOf="@id/vline_left"
+            app:layout_constraintEnd_toEndOf="@id/vline_right"
+            tools:text="Score"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
