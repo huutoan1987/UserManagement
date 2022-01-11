@@ -1,5 +1,6 @@
 package com.example.usermanagement.ui
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.usermanagement.interfaces.IDispatcher
@@ -11,7 +12,8 @@ import retrofit2.HttpException
 abstract class BaseActivityVM constructor(protected val dispatcher: IDispatcher): ViewModel() {
     private val _command: SingleLiveEvent<Command> = SingleLiveEvent()
     val command = _command
-    protected fun setCommand(cmd: Command) = viewModelScope.launch(dispatcher.main()) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    fun setCommand(cmd: Command) = viewModelScope.launch(dispatcher.main()) {
         command.value = cmd
     }
 

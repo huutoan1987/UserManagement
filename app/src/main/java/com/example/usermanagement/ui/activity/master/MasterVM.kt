@@ -1,6 +1,7 @@
 package com.example.usermanagement.ui.activity.master
 
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class MasterVM @Inject constructor(
@@ -25,30 +27,35 @@ class MasterVM @Inject constructor(
     private val _logUtil: LogUtil,
     dispatch: IDispatcher) : BaseActivityVM(dispatch) {
 
-    private val _searchReqFlow = MutableStateFlow(UserSearchRequest())
-    private val _lstUserLD = MutableLiveData<List<User>>()
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    val _searchReqFlow = MutableStateFlow(UserSearchRequest())
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    val _lstUserLD = MutableLiveData<List<User>>()
     val lstUser: LiveData<List<User>> = _lstUserLD
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    val _searchChainFlow = _searchReqFlow
+        .debounce(500)
+        .flatMapLatest { searchReq -> _userRepo.searchRemoteUsersAsFlow(searchReq) }
+        .flowOn(dispatcher.io())
+        .catch { t -> _logUtil.e(t) }  // if this line is run, whole flow will be canceled
 
     init {
         viewModelScope.launch(dispatcher.main()) {
-            _searchReqFlow
-                .debounce(500)
-                .flatMapLatest { searchReq -> _userRepo.searchRemoteUsersAsFlow(searchReq) }
-                .flowOn(dispatcher.io())
-                .catch { t -> _logUtil.e(t) }  // if this line is run, whole flow will be canceled
-                .collect { result ->
-                    when (result) {
-                        is UMResult.Success -> {
-                            if (_searchReqFlow.value.isFirstPage()) {
-                                _lstUserLD.value = result.data ?: emptyList()
-                            } else {
-                                _lstUserLD.value = _lstUserLD.value?.plus(result.data)
-                            }
+            _searchChainFlow.collect { result ->
+                when (result) {
+                    is UMResult.Success -> {
+                        if (_searchReqFlow.value.isFirstPage()) {
+                            _lstUserLD.value = result.data ?: emptyList()
+                        } else {
+                            _lstUserLD.value = _lstUserLD.value?.plus(result.data)
                         }
-                        is UMResult.Error -> handleException(result.exception)
-                        is UMResult.Loading -> {}
                     }
+                    is UMResult.Error -> handleException(result.exception)
+                    is UMResult.Loading -> {}
                 }
+            }
         }
     }
 
@@ -56,8 +63,7 @@ class MasterVM @Inject constructor(
         _lstUserLD.value = emptyList()
         if (isTablet) setCommand(Command.UpdateDetailFragment(null))
 
-        if (query.trim().isNotEmpty())
-            _searchReqFlow.value = UserSearchRequest(query.trim())
+        _searchReqFlow.value = UserSearchRequest(query.trim())
     }
 
     internal fun onListScrollToEnd() {
@@ -74,5 +80,4 @@ class MasterVM @Inject constructor(
             else Command.OpenDetailActivity(item)
         )
     }
-
 }

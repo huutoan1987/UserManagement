@@ -4,6 +4,7 @@ import com.example.usermanagement.api.ApiService
 import com.example.usermanagement.data.entity.User
 import com.example.usermanagement.data.model.local.UserSearchRequest
 import com.example.usermanagement.objects.UMConstants
+import com.example.usermanagement.objects.UMConstants.EXCEPTION_INVALID_SEARCH_KEY
 import com.example.usermanagement.objects.UMResult
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -14,7 +15,7 @@ import javax.inject.Singleton
 class UserRepo @Inject constructor(private val _apiService: ApiService) {
 
     internal fun searchRemoteUsersAsFlow(searchReq: UserSearchRequest) = flow<UMResult<List<User>>>{
-        if (!searchReq.isValid()) throw Exception("Invalid search key")
+        if (!searchReq.isValid()) throw Exception(EXCEPTION_INVALID_SEARCH_KEY)
 
         emit(UMResult.Success(
             if (searchReq.searchStr.isEmpty()) emptyList()
